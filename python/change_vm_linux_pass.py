@@ -8,6 +8,7 @@ from netmiko import (
 
 vm={}
 vm_restr={}
+vm_without_tools=[]
 
 with open('list_vm.txt') as inp:
 	regexp1=r'(\S+)[\s\{]+([\d\.]+)'
@@ -26,13 +27,18 @@ with open('list_vm.txt') as inp:
 				result = subprocess.run(['nslookup', match2.group(1)], stdout=subprocess.PIPE)
 				regexp3=r'(\d+\.\d+\.\d+\.\d+)'
 				ip_list=re.findall(regexp3,str(result))
-				if ip_list:
+				if len(ip_list) > 1:
 					ip=ip_list[::-1][0]
 					vm[match2.group(1)]=ip
 				else:
-					print(f'VMware tools not install on {match2.group(1)}, and dns-record not found for {match2.group(1)} ')
+					vm_without_tools.append(match2.group(1))
 
-print('Work Nets:')			
+if(vm_without_tools):					
+	print(f'\n VMware tools not install and dns-record not found for:')
+	for vms in vm_without_tools:
+		print(vms)
+
+print('\nWork Nets:')			
 pprint(vm)
 print()
 if vm_restr:
